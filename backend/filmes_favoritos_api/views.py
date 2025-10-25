@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import FavoriteMovie
-from .serializers import FavoriteMovieSerializer
+from .models import FavoriteMovie, ShareableList
+from .serializers import FavoriteMovieSerializer, ShareableListSerializer
 
 from decouple import config
 import requests
@@ -114,3 +114,55 @@ class FavoriteDestroyView(APIView):
         
         # 3. Retorna 204 No Content (padrão para sucesso em DELETE)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class ShareLinkGenerateView(APIView):
+    """
+    POST: Gera um novo hash de compartilhamento para a lista de favoritos atual do usuário.
+    """
+    def post(self, request):
+        # 1. Obtém todos os filmes favoritos existentes
+        # No seu design atual, todos os favoritos do BD são a "lista" do usuário.
+        favorites = FavoriteMovie.objects.all()
+        
+        if not favorites.exists():
+            return Response(
+                {"detail": "Não é possível gerar um link: sua lista de favoritos está vazia."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        # 2. Cria o objeto ShareableList (o share_hash é gerado automaticamente pelo UUID)
+        new_list = ShareableList.objects.create()
+        
+        # 3. Adiciona todos os filmes favoritos à nova lista
+        new_list.favorites.set(favorites)
+        
+        # O Django salva a relação automaticamente
+        
+        # 4. Retorna o hash para o Front-End
+        # O Front-End irá construir a URL: http://localhost:3000/shared/<hash>
+        return Response(
+            {"share_hash": new_list.share_hash},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class ShareLinkRetrieveView(APIView):
+    """
+    GET: Retorna os detalhes da lista de filmes a partir do hash de compartilhamento.
+    """
+    def get(self, request, share_hash):
+        try:
+            # 1. Busca a lista pelo hash (UUID) passado na URL
+            shared_list = ShareableList.objects.get(share_hash=share_hash)
+            
+        except ShareableList.DoesNotExist:
+            return Response(
+                {"detail": "Link de compartilhamento inválido ou expirado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # 2. Serializa a lista, incluindo todos os filmes relacionados
+        serializer = ShareableListSerializer(shared_list)
+        
+        # 3. Retorna a lista de filmes
+        return Response(serializer.data)
