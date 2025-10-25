@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (MovieSearchView, FavoriteListCreateView, 
                     FavoriteDestroyView, ShareLinkGenerateView, 
-                    ShareLinkRetrieveView)
+                    ShareLinkRetrieveView, RegisterView)
 
 urlpatterns = [
     # Endpoint de Pesquisa
@@ -18,4 +18,7 @@ urlpatterns = [
     
     # Visualização do Link (GET)
     path('share/<uuid:share_hash>/', ShareLinkRetrieveView.as_view(), name='share-link-retrieve'),
+
+    # Rota de Registro de Usuário
+    path('register/', RegisterView.as_view(), name='user-register'),
 ]
