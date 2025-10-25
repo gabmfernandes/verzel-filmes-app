@@ -1,9 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
 import uuid
 
 # Armazena os dados essenciais de um filme favorito.
 class FavoriteMovie(models.Model):
     """Representa um filme que foi salvo como favorito."""
+
+    # Chave que liga ao usuário que favoritou
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
     
     # ID do filme na API do TMDb.
     tmdb_id = models.IntegerField(unique=True) 
@@ -23,6 +27,9 @@ class FavoriteMovie(models.Model):
     # Data em que o filme foi salvo
     added_at = models.DateTimeField(auto_now_add=True)
     
+    class Meta:
+        unique_together = ('tmdb_id', 'user')
+
     def __str__(self):
         return self.title
 
@@ -32,7 +39,9 @@ class ShareableList(models.Model):
     """
     Representa uma lista de filmes favoritos que pode ser compartilhada.
     """
-    
+    # Chave que liga a lista ao usuário que a gerou
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_lists')
+
     # O hash único que será usado na URL.
     share_hash = models.UUIDField(
         default=uuid.uuid4, 
