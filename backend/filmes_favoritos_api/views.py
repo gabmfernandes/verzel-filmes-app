@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import FavoriteMovie, ShareableList
-from .serializers import FavoriteMovieSerializer, ShareableListSerializer
+from .serializers import FavoriteMovieSerializer, ShareableListSerializer, UserSerializer
 
 from decouple import config
 import requests
@@ -60,69 +61,72 @@ class MovieSearchView(APIView):
         
 class FavoriteListCreateView(APIView):
     """
-    GET: Retorna a lista completa de filmes favoritos.
-    POST: Adiciona um novo filme à lista de favoritos.
+    GET: Retorna a lista de filmes favoritos DO USUÁRIO LOGADO.
+    POST: Adiciona um novo filme à lista do USUÁRIO LOGADO.
     """
-    
+    permission_classes = [IsAuthenticated]  # IMPEDE ACESSO SEM TOKEN
+
     def get(self, request):
-        # 1. Recupera todos os filmes e ordena por data de adição (mais recente primeiro)
-        favorites = FavoriteMovie.objects.all().order_by('-added_at')
+        # Obtém APENAS os favoritos do usuário logado
+        favorites = FavoriteMovie.objects.filter(user=request.user).order_by('-added_at')
         
-        # 2. Serializa a lista para JSON (many=True para uma lista de objetos)
         serializer = FavoriteMovieSerializer(favorites, many=True)
-        
-        # 3. Retorna a lista com status 200 OK
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        # 1. Instancia o Serializer com os dados recebidos do POST
         serializer = FavoriteMovieSerializer(data=request.data)
         
         if serializer.is_valid():
-            # 2. Lógica para EVITAR DUPLICIDADE:
             tmdb_id = serializer.validated_data.get('tmdb_id')
-            if FavoriteMovie.objects.filter(tmdb_id=tmdb_id).exists():
+            
+            # Verifica se o filme já existe PARA ESTE USUÁRIO
+            if FavoriteMovie.objects.filter(tmdb_id=tmdb_id, user=request.user).exists():
                 return Response(
                     {"detail": "Este filme já está na sua lista de favoritos."},
-                    status=status.HTTP_409_CONFLICT # 409: Conflito (já existe)
+                    status=status.HTTP_409_CONFLICT
                 )
             
-            # 3. Salva o novo filme no banco de dados
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED) # 201: Criado
+            # Salva o filme e liga-o ao usuário logado
+            serializer.save(user=request.user) 
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         
-        # Retorna erros de validação
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class FavoriteDestroyView(APIView):
     """
-    DELETE: Remove um filme favorito usando o ID do TMDb passado na URL.
+    DELETE: Remove um filme favorito do usuário logado.
     """
+    permission_classes = [IsAuthenticated]  # IMPEDE ACESSO SEM TOKEN
+    
     def delete(self, request, tmdb_id):
+        user = request.user 
+        
         try:
-            # 1. Tenta encontrar o filme no BD pelo tmdb_id (chave única)
-            favorite = FavoriteMovie.objects.get(tmdb_id=tmdb_id)
+            # Busca o filme pelo tmdb_id E pelo user logado.
+            favorite = FavoriteMovie.objects.get(
+                tmdb_id=tmdb_id,
+                user=user
+            )
             
         except FavoriteMovie.DoesNotExist:
+            # Retorna 404 se o filme não for encontrado OU se não pertencer ao usuário
             return Response(
-                {"detail": "Filme não encontrado na lista de favoritos."},
+                {"detail": "Filme não encontrado na sua lista."},
                 status=status.HTTP_404_NOT_FOUND
             )
             
-        # 2. Deleta o objeto encontrado
         favorite.delete()
-        
-        # 3. Retorna 204 No Content (padrão para sucesso em DELETE)
         return Response(status=status.HTTP_204_NO_CONTENT)
     
 class ShareLinkGenerateView(APIView):
     """
-    POST: Gera um novo hash de compartilhamento para a lista de favoritos atual do usuário.
+    POST: Gera um novo hash de compartilhamento para a lista de favoritos DO USUÁRIO.
     """
+    permission_classes = [IsAuthenticated] # IMPEDE ACESSO SEM TOKEN
+    
     def post(self, request):
-        # 1. Obtém todos os filmes favoritos existentes
-        # No seu design atual, todos os favoritos do BD são a "lista" do usuário.
-        favorites = FavoriteMovie.objects.all()
+        # 1. Obtém APENAS os favoritos do usuário logado
+        favorites = FavoriteMovie.objects.filter(user=request.user)
         
         if not favorites.exists():
             return Response(
@@ -130,16 +134,13 @@ class ShareLinkGenerateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        # 2. Cria o objeto ShareableList (o share_hash é gerado automaticamente pelo UUID)
-        new_list = ShareableList.objects.create()
+        # 2. Cria o objeto ShareableList e liga-o ao usuário
+        # O modelo ShareableList agora exige o campo 'user'
+        new_list = ShareableList.objects.create(user=request.user) 
         
-        # 3. Adiciona todos os filmes favoritos à nova lista
+        # 3. Adiciona os filmes filtrados ao M2M
         new_list.favorites.set(favorites)
         
-        # O Django salva a relação automaticamente
-        
-        # 4. Retorna o hash para o Front-End
-        # O Front-End irá construir a URL: http://localhost:3000/shared/<hash>
         return Response(
             {"share_hash": new_list.share_hash},
             status=status.HTTP_201_CREATED
@@ -166,3 +167,20 @@ class ShareLinkRetrieveView(APIView):
         
         # 3. Retorna a lista de filmes
         return Response(serializer.data)
+    
+class RegisterView(APIView):
+    """Endpoint para cadastro de novos usuários."""
+    # Permite que usuários não autenticados (qualquer um) acessem este endpoint
+    permission_classes = [AllowAny] 
+    
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": "Usuário registrado com sucesso."},
+                status=status.HTTP_201_CREATED
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
