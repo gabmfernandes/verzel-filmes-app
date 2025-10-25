@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FavoriteMovie
+from .models import FavoriteMovie, ShareableList
 
 class FavoriteMovieSerializer(serializers.ModelSerializer):
     """
@@ -19,3 +19,16 @@ class FavoriteMovieSerializer(serializers.ModelSerializer):
             'added_at'
         ]
         read_only_fields = ('added_at', 'id')
+
+class ShareableListSerializer(serializers.ModelSerializer):
+    """
+    Serializer para o modelo ShareableList.
+    Inclui os detalhes dos filmes favoritos relacionados.
+    """
+
+    favorites = FavoriteMovieSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ShareableList
+        fields = ['share_hash', 'favorites', 'created_at']
+        read_only_fields = ('share_hash', 'created_at')
