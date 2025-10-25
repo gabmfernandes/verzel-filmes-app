@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import FavoriteMovie, ShareableList
+from django.contrib.auth.models import User
 
 class FavoriteMovieSerializer(serializers.ModelSerializer):
     """
@@ -32,3 +33,20 @@ class ShareableListSerializer(serializers.ModelSerializer):
         model = ShareableList
         fields = ['share_hash', 'favorites', 'created_at']
         read_only_fields = ('share_hash', 'created_at')
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer para registro de novo usuário."""
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {'email': {'required': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user
