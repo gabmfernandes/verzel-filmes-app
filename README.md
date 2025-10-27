@@ -35,7 +35,8 @@ Esta aplicação está hospedada nas seguintes plataformas na nuvem:
 * **Aplicação Front-End (React):** **Render** (`Static Site`)
 
 **Acesse a aplicação:**
-
+*LEMBRETE*
+Quando for acessar o serviço, por favor. Entre primeiro na URL da api para carregar a instância do Render, dado que é o plano gratuito e ele hiberna depois de 15 minutos sem uso.
 * **URL da Aplicação:** `https://verzel-filmes-front.onrender.com/`
 * **URL Base da API:** `https://verzel-filmes-api.onrender.com/api`
 
