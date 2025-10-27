@@ -4,7 +4,6 @@
 ![Django](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 
 ## 🎬 Sobre
 
@@ -33,16 +32,15 @@ Esta aplicação está hospedada nas seguintes plataformas na nuvem:
 
 * **API Back-End (Django):** **Render** (`Web Service`)
 * **Banco de Dados (PostgreSQL):** **Render** (`Managed Database`)
-* **Aplicação Front-End (React):** **Vercel** (ou Render `Static Site`)
+* **Aplicação Front-End (React):** **Render** (`Static Site`)
 
 **Acesse a aplicação:**
 
-* **URL da Aplicação:** `[URL_DO_SEU_FRONTEND_NO_VERCEL]`
-* **URL Base da API:** `[URL_DO_SEU_BACKEND_NO_RENDER]/api`
+* **URL da Aplicação:** `https://verzel-filmes-front.onrender.com/`
+* **URL Base da API:** `https://verzel-filmes-api.onrender.com/api`
 
-*(Substitua os placeholders acima pelas URLs reais após o deploy)*
 
-A comunicação entre o Front-End e o Back-End em produção é feita através da variável de ambiente `REACT_APP_DJANGO_API_BASE_URL` configurada na plataforma de hospedagem do Front-End (Vercel/Render).
+A comunicação entre o Front-End e o Back-End em produção é feita através da variável de ambiente `REACT_APP_DJANGO_API_BASE_URL` configurada na plataforma de hospedagem do Front-End (Render).
 
 ## ⚙️ Configuração e Instalação Local (Opcional)
 
@@ -91,7 +89,7 @@ Crie o arquivo `/backend/.env`:
 SECRET_KEY=sua-chave-secreta-aleatoria
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-TMDb_API_KEY=SUA_CHAVE_API_V3_DO_TMDB_AQUI
+TMDb_API_KEY=SUA_CHAVE_API_DO_TMDB_AQUI
 DB_ENGINE=django.db.backends.postgresql
 DB_NAME=elite_dev_db
 DB_USER=postgres
