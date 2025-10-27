@@ -1,0 +1,1 @@
+web: gunicorn verzel_filmes_app.wsgi:application
