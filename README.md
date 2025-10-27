@@ -61,6 +61,7 @@ Siga os passos abaixo para configurar e rodar o projeto em seu ambiente local.
 ```bash
 git clone [URL_DO_SEU_REPOSITORIO]
 cd [NOME_DA_PASTA_DO_PROJETO]
+´´´
 
 2. Configurar o Back-End (API Django)
 
