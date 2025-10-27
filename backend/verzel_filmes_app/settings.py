@@ -1,5 +1,8 @@
+import os
 from pathlib import Path
 from decouple import config
+import dj_database_url
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,13 +12,29 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-@t28oov4m=fzg023t&ex6@t)#dvr11xc9aui4-3n4*3zf5vgru"
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool) # Lendo do .env ou ambiente
 
-ALLOWED_HOSTS = []
+# ==============================================================================
+# ALLOWED_HOSTS (CORREÇÃO PARA RENDER)
+# ==============================================================================
 
+# Lógica para suportar o domínio público do Render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+# Define a lista base: localhost e 127.0.0.1
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+]
+
+# Adiciona o host externo do Render se estiver em produção
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# --- FIM da seção ALLOWED_HOSTS ---
 
 # Application definition
 
@@ -32,9 +51,13 @@ INSTALLED_APPS = [
     'filmes_favoritos_api',
 ]
 
+# ==============================================================================
+# MIDDLEWARE (CORRIGIDO PARA CORS)
+# ==============================================================================
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -43,10 +66,18 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+# --- FIM da seção MIDDLEWARE ---
+
+# CORS
 CORS_ALLOWED_ORIGINS = [
+    # URLs de Desenvolvimento
     "http://localhost:3000",
+    
+    # URLs de Produção (Exemplo de Front-End em Vercel ou Render Static Site)
+    "https://seu-app-de-filmes.vercel.app", 
 ]
-# CORS_ALLOW_ALL_ORIGINS = True 
+CORS_ALLOW_CREDENTIALS = True
+
 
 ROOT_URLCONF = "verzel_filmes_app.urls"
 
@@ -68,19 +99,36 @@ TEMPLATES = [
 WSGI_APPLICATION = "verzel_filmes_app.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
+# ==============================================================================
+# DATABASE (LÓGICA DE TRANSIÇÃO PARA RENDER/LOCAL)
+# ==============================================================================
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+# 1. Tenta ler DATABASE_URL (definida pelo Render em produção)
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    # MODO PRODUÇÃO: Usa a URL completa do Render
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600  
+        )
     }
-}
+else:
+    # MODO DESENVOLVIMENTO: Usa as variáveis separadas do local .env
+    DATABASES = {
+        "default": {
+            # O ENGINE, NAME, USER, etc. agora precisam ser lidos do .env
+            "ENGINE": config('DB_ENGINE', default='django.db.backends.sqlite3'),
+            "NAME": config('DB_NAME', default=(BASE_DIR / 'db.sqlite3')),
+            'USER': config('DB_USER', default=''),
+            'PASSWORD': config('DB_PASSWORD', default=''),
+            'HOST': config('DB_HOST', default='localhost'),
+            'PORT': config('DB_PORT', default=''),
+        }
+    }
+    
+# --- FIM da seção DATABASES ---
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -129,6 +177,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # CRÍTICO PARA RENDER
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -136,7 +186,6 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Configurações do JWT
-from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
