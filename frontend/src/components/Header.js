@@ -18,16 +18,14 @@ function Header() {
         justifyContent: 'space-between', 
         alignItems: 'center', 
         padding: '10px 20px',
-        backgroundColor: '#1E2837', // Cor escura para header
+        backgroundColor: '#1E2837',
         color: 'white'
     }}>
       
-      {/* Nome do App */}
       <h2 style={{ margin: 0 }}>
         <Link to="/" style={{ color: '#00D1FF', textDecoration: 'none' }}>Verzel Filmes</Link>
       </h2>
       
-      {/* Links de Navegação */}
       <nav style={{ display: 'flex', alignItems: 'center' }}>
         {isLoggedIn && (
           <Link to="/favorites" style={{ color: 'white', marginRight: '20px', textDecoration: 'none' }}>

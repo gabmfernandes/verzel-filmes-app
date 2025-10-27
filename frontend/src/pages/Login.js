@@ -10,18 +10,12 @@ function Login() {
   
   const { login, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-  
-  // Redireciona se já estiver logado
-//   if (isLoggedIn) {
-//       navigate('/favorites');
-//       return null;
-//   }
 
   useEffect(() => {
     if (isLoggedIn) {
         navigate('/favorites');
     }
-  }, [isLoggedIn, navigate]); // Dependências do hook
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,14 +23,8 @@ function Login() {
 
     try {
       await login(username, password);
-      
-    //   if (success) {
-    //     // Redireciona para a rota protegida
-    //     navigate('/favorites');
-    //   }
 
     } catch (err) {
-      // Erro 401 do JWT geralmente indica credenciais inválidas
       setError('Credenciais inválidas. Verifique seu nome de usuário e senha.');
     }
   };

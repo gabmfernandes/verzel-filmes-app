@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { searchMovies, addFavorite, getFavorites, removeFavorite } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-// URL base para posters (usado para exibir a imagem)
 const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
 
-// Componente MovieCard (criado aqui para simplificar)
 const MovieCard = ({ movie, isFavorite, onToggleFavorite }) => {
   const { isLoggedIn } = useAuth();
   
@@ -15,7 +13,6 @@ const MovieCard = ({ movie, isFavorite, onToggleFavorite }) => {
     poster_path: movie.poster_path,
     rating: parseFloat(movie.vote_average.toFixed(1)),
     release_date: movie.release_date,
-    // Note: A View POST espera todos esses campos!
   };
 
   console.log(movieData);
@@ -65,14 +62,13 @@ function Home() {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [favoriteIds, setFavoriteIds] = useState([]); // Array de tmdb_id favoritos
+  const [favoriteIds, setFavoriteIds] = useState([]);
 
   const { isLoggedIn } = useAuth();
 
   
 
   useEffect(() => {
-    // Função para carregar IDs de filmes favoritos do usuário
     const loadFavorites = async () => {
         if (!isLoggedIn) {
         setFavoriteIds([]);
@@ -88,7 +84,7 @@ function Home() {
     };
 
     loadFavorites();
-  }, [isLoggedIn]); // Recarrega sempre que o estado de login mudar
+  }, [isLoggedIn]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -108,19 +104,14 @@ function Home() {
     }
   };
   
-  // Função para adicionar ou remover um favorito
   const handleToggleFavorite = async (movieData, isFavorite) => {
     try {
       if (isFavorite) {
-        // Chamar DELETE
         await removeFavorite(movieData.tmdb_id);
-        // Remove o ID do estado local
         setFavoriteIds(prev => prev.filter(id => id !== movieData.tmdb_id));
         alert('Removido dos favoritos!');
       } else {
-        // Chamar POST
         await addFavorite(movieData);
-        // Adiciona o ID ao estado local
         setFavoriteIds(prev => [...prev, movieData.tmdb_id]);
         alert('Adicionado aos favoritos!');
       }

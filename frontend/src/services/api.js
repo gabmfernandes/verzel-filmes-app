@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-// 🚨 URL DO BACK-END DJANGO (certifique-se de que a porta 8000 está correta)
-const BASE_URL = 'http://localhost:8000/api'; 
+const BASE_URL = process.env.REACT_APP_DJANGO_API_BASE_URL;
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -31,7 +30,6 @@ api.interceptors.request.use(
 // 2. FUNÇÕES DE API (Serão usadas nos componentes)
 // =================================================================
 
-// Funções de Autenticação (NÃO usam o interceptor, pois ainda estão obtendo o token)
 export const apiLogin = (username, password) => 
   axios.post(`${BASE_URL}/token/`, { username, password });
   
@@ -43,7 +41,6 @@ export const apiRegister = (data) =>
 
 // A - Pesquisa TMDb
 export const searchMovies = (query) => {
-  // A requisição vai para /api/search/?query=...
   return api.get(`/search/`, { params: { query } });
 };
 

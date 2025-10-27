@@ -4,7 +4,6 @@ import { getSharedList } from '../services/api';
 
 const TMDB_IMAGE_URL = 'https://image.tmdb.org/t/p/w500';
 
-// Componente de card simples para a lista pública
 const SharedMovieCard = ({ movie }) => (
     <div style={{ border: '1px solid #ccc', padding: '15px', width: '220px', borderRadius: '8px', boxShadow: '2px 2px 5px rgba(0,0,0,0.1)' }}>
       {movie.poster_path ? (
@@ -18,7 +17,6 @@ const SharedMovieCard = ({ movie }) => (
       <h3 style={{ fontSize: '1.1em', margin: '0 0 5px 0' }}>{movie.title}</h3>
       <p style={{ margin: '0 0 10px 0', fontWeight: 'bold', color: '#00D1FF' }}>
         Nota TMDB: {
-            // ✅ CORREÇÃO: Verifica se o valor existe E converte para float antes de usar toFixed()
             movie.rating 
                 ? parseFloat(movie.rating).toFixed(1) 
                 : 'N/A'
@@ -29,7 +27,7 @@ const SharedMovieCard = ({ movie }) => (
 
 
 function SharedList() {
-  const { hash } = useParams(); // Obtém o hash da URL
+  const { hash } = useParams();
   const [sharedData, setSharedData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

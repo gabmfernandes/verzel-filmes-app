@@ -12,7 +12,6 @@ const FavoriteItem = ({ movie, onRemove }) => (
         <div style={{ flexGrow: 1 }}>
             <h3 style={{ margin: '0 0 5px 0' }}>{movie.title}</h3>
             <p style={{ margin: 0, fontWeight: 'bold', color: '#00D1FF' }}>Nota: {
-                    // ✅ CORREÇÃO: Verifica se o valor existe E converte para float antes de usar toFixed()
                     movie.rating 
                         ? parseFloat(movie.rating).toFixed(1) 
                         : 'N/A'
@@ -60,7 +59,6 @@ function Favorites() {
   const handleRemove = async (tmdbId) => {
     try {
       await removeFavorite(tmdbId);
-      // Atualiza o estado removendo o filme deletado
       setFavorites(favorites.filter(fav => fav.tmdb_id !== tmdbId));
     } catch (e) {
       alert('Erro ao remover o filme.');
@@ -72,7 +70,6 @@ function Favorites() {
     try {
       const response = await generateShareLink();
       const hash = response.data.share_hash;
-      // Constrói o link completo usando a URL do Front-End
       const fullUrl = `${window.location.origin}/shared/${hash}`;
       setShareLink(fullUrl);
       

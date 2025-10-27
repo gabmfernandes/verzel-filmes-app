@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { apiRegister } from '../services/api'; // Usa a função do service
+import { apiRegister } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 function Register() {
@@ -21,12 +21,10 @@ function Register() {
       navigate('/login');
 
     } catch (err) {
-      // Trata erros de validação do Django
       const data = err.response?.data;
       let errorMsg = 'Erro desconhecido no cadastro.';
       
       if (data) {
-        // Pega a primeira mensagem de erro de qualquer campo (username, email, password)
         errorMsg = data.username ? `Usuário: ${data.username[0]}` : 
                    data.email ? `Email: ${data.email[0]}` : 
                    data.password ? `Senha: ${data.password[0]}` : errorMsg;
