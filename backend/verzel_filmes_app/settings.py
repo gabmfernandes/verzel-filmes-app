@@ -75,7 +75,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     
     # URLs de Produção (Exemplo de Front-End em Vercel ou Render Static Site)
-    "https://seu-app-de-filmes.vercel.app", 
+    "https://verzel-filmes-front.onrender.com", 
 ]
 CORS_ALLOW_CREDENTIALS = True
 
