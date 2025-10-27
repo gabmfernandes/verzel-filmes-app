@@ -24,7 +24,7 @@ Aplicação *full-stack* (React + Django + PostgreSQL) para pesquisar filmes (vi
 * **Configuração:** python-decouple, dj-database-url, django-cors-headers  
 * **Servidor WSGI (Prod):** Gunicorn  
 * **API Externa:** TMDb API  
-* **Hospedagem:** Render (API + DB), Vercel (Front-End)
+* **Hospedagem:** Render (API + DB + Front-End)
 
 ## ☁️ Hospedagem (Deploy)
 
